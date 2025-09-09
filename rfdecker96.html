@@ -372,10 +372,9 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, query, orderBy, limit, getDocs, where, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, query, orderBy, limit, getDocs, where, deleteDoc, doc, serverTimestamp, addDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Firebase cfguration
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyC5NMJp2LM-UlNfmynWQVKU-EHwkt6eFh4",
             authDomain: "zipcodefinder-705eb.firebaseapp.com",
             projectId: "zipcodefinder-705eb",
@@ -385,11 +384,24 @@
             measurementId: "G-Z0NRRE8KTP"
         };
 
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
+        const app = initializeApp(config);
         const db = getFirestore(app);
 
-        // Make Firebase available globally
+        // Global assignments (same pattern as index.html)
+        window._app = app;
+        window._db = db;
+        window._col = collection;
+        window._query = query;
+        window._orderBy = orderBy;
+        window._limit = limit;
+        window._getDocs = getDocs;
+        window._where = where;
+        window._deleteDoc = deleteDoc;
+        window._doc = doc;
+        window._ts = serverTimestamp;
+        window._add = addDoc;
+        
+        // Legacy assignments for backward compatibility
         window.firebaseApp = app;
         window.firebaseDb = db;
         window.collection = collection;
@@ -460,7 +472,7 @@
                 analyticsSnapshot.forEach((doc) => {
                     analytics.push({
                         id: doc.id,
-                        ...doc.payload()
+                        ...doc.data()
                     });
                 });
 
@@ -477,7 +489,7 @@
                 
                 resultsSnapshot.forEach((doc) => {
                     totalAddresses++;
-                    if (doc.payload().ok) {
+                    if (doc.data().ok) {
                         totalGeocoded++;
                     }
                 });
@@ -593,7 +605,7 @@
 
                 const analytics = [];
                 submissionSnapshot.forEach((doc) => {
-                    analytics.push(doc.payload());
+                    analytics.push(doc.data());
                 });
                 
                 const submission = analytics[0]; // Get the first matching submission
@@ -608,7 +620,7 @@
                 const results = [];
                 
                 resultsSnapshot.forEach((doc) => {
-                    results.push(doc.payload());
+                    results.push(doc.data());
                 });
 
                 console.log(`Found ${results.length} geocoding results for session`);
@@ -725,7 +737,7 @@
                     return;
                 }
 
-                const submission = submissionSnapshot.docs[0].payload();
+                const submission = submissionSnapshot.docs[0].data();
                 const originalData = submission.payload;
                 const cfg = submission.cfg;
 
@@ -744,7 +756,7 @@
                 const geocodeResults = {};
                 
                 resultsSnapshot.forEach((doc) => {
-                    const result = doc.payload();
+                    const result = doc.data();
                     const key = `${result.addr}|${result.city}|${result.state}`.toUpperCase();
                     if (result.ok && result.zip) {
                         geocodeResults[key] = result.zip;
