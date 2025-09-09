@@ -87,14 +87,14 @@
             font-weight: 500;
         }
 
-        .submissions-section {
+        .analytics-section {
             background: white;
             border-radius: 12px;
             padding: 30px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
         }
 
-        .submissions-header {
+        .analytics-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -103,7 +103,7 @@
             border-bottom: 1px solid #e2e8f0;
         }
 
-        .submissions-header h2 {
+        .analytics-header h2 {
             font-size: 1.5rem;
             font-weight: 600;
         }
@@ -135,47 +135,47 @@
             box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
         }
 
-        .submissions-table {
+        .analytics-table {
             width: 100%;
             border-collapse: collapse;
             margin-top: 20px;
         }
 
-        .submissions-table th,
-        .submissions-table td {
+        .analytics-table th,
+        .analytics-table td {
             padding: 12px;
             text-align: left;
             border-bottom: 1px solid #e2e8f0;
         }
 
-        .submissions-table th {
+        .analytics-table th {
             background: #f7fafc;
             font-weight: 600;
             color: #4a5568;
         }
 
-        .submissions-table tr:hover {
+        .analytics-table tr:hover {
             background: #f7fafc;
         }
 
-        .status-badge {
+        .st-badge {
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.8rem;
             font-weight: 500;
         }
 
-        .status-received {
+        .st-received {
             background: #bee3f8;
             color: #2b6cb0;
         }
 
-        .status-completed {
+        .st-completed {
             background: #c6f6d5;
             color: #2f855a;
         }
 
-        .status-error {
+        .st-error {
             background: #fed7d7;
             color: #c53030;
         }
@@ -268,7 +268,7 @@
             font-weight: 600;
         }
 
-        .success-result {
+        .ok-result {
             color: #38a169;
         }
 
@@ -285,7 +285,7 @@
                 grid-template-columns: 1fr;
             }
             
-            .submissions-header {
+            .analytics-header {
                 flex-direction: column;
                 gap: 15px;
             }
@@ -294,12 +294,12 @@
                 flex-direction: column;
             }
             
-            .submissions-table {
+            .analytics-table {
                 font-size: 0.8rem;
             }
             
-            .submissions-table th,
-            .submissions-table td {
+            .analytics-table th,
+            .analytics-table td {
                 padding: 8px 4px;
             }
         }
@@ -309,7 +309,7 @@
     <div class="container">
         <header class="header">
             <h1>🔐 Secret Admin Dashboard</h1>
-            <p>Access all ZIP Code Geocoder data from your GitHub Pages site</p>
+            <p>Access all ZIP Code Geocoder payload from your GitHub Pages site</p>
         </header>
 
         <!-- Login Section -->
@@ -327,7 +327,7 @@
             <div class="stats-grid">
                 <div class="stat-card">
                     <div class="stat-number" id="totalSubmissions">0</div>
-                    <div class="stat-label">Total Submissions</div>
+                    <div class="stat-label">Sessions Tracked</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-number" id="totalAddresses">0</div>
@@ -338,24 +338,24 @@
                     <div class="stat-label">Successfully Geocoded</div>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-number" id="successRate">0%</div>
+                    <div class="stat-number" id="okRate">0%</div>
                     <div class="stat-label">Success Rate</div>
                 </div>
             </div>
 
             <!-- Submissions Table -->
-            <div class="submissions-section">
-                <div class="submissions-header">
-                    <h2>User Submissions</h2>
+            <div class="analytics-section">
+                <div class="analytics-header">
+                    <h2>Analytics Dashboard</h2>
                     <div>
                         <button class="refresh-btn" onclick="loadDashboardData()">🔄 Refresh</button>
-                        <button class="delete-btn" onclick="deleteAllSubmissions()" title="Delete all submissions and data">🗑️ Delete All</button>
+                        <button class="delete-btn" onclick="deleteAllSubmissions()" title="Delete all analytics and payload">🗑️ Delete All</button>
                         <button class="logout-btn" onclick="logout()">Logout</button>
                     </div>
                 </div>
                 
-                <div id="submissionsContainer">
-                    <div class="loading">Loading submissions...</div>
+                <div id="analyticsContainer">
+                    <div class="loading">Loading analytics...</div>
                 </div>
             </div>
         </div>
@@ -374,7 +374,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
         import { getFirestore, collection, query, orderBy, limit, getDocs, where, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-        // Firebase configuration
+        // Firebase cfguration
         const firebaseConfig = {
             apiKey: "AIzaSyC5NMJp2LM-UlNfmynWQVKU-EHwkt6eFh4",
             authDomain: "zipcodefinder-705eb.firebaseapp.com",
@@ -445,30 +445,30 @@
             if (!isAuthenticated) return;
 
             try {
-                console.log('Loading dashboard data from Firebase...');
+                console.log('Loading dashboard payload from Firebase...');
                 
-                // Get submissions ordered by timestamp
-                const submissionsQuery = window.query(
-                    window.collection(window.firebaseDb, 'submissions'),
-                    window.orderBy('timestamp', 'desc'),
+                // Get analytics payload ordered by ts
+                const analyticsQuery = window.query(
+                    window.collection(window.firebaseDb, 'analytics'),
+                    window.orderBy('ts', 'desc'),
                     window.limit(100)
                 );
                 
-                const submissionsSnapshot = await window.getDocs(submissionsQuery);
-                const submissions = [];
+                const analyticsSnapshot = await window.getDocs(analyticsQuery);
+                const analytics = [];
                 
-                submissionsSnapshot.forEach((doc) => {
-                    submissions.push({
+                analyticsSnapshot.forEach((doc) => {
+                    analytics.push({
                         id: doc.id,
-                        ...doc.data()
+                        ...doc.payload()
                     });
                 });
 
-                console.log(`Found ${submissions.length} submissions`);
+                console.log(`Found ${analytics.length} analytics`);
 
                 // Get geocode results for statistics
                 const resultsQuery = window.query(
-                    window.collection(window.firebaseDb, 'geocode_results')
+                    window.collection(window.firebaseDb, 'metrics')
                 );
                 const resultsSnapshot = await window.getDocs(resultsQuery);
                 
@@ -477,7 +477,7 @@
                 
                 resultsSnapshot.forEach((doc) => {
                     totalAddresses++;
-                    if (doc.data().success) {
+                    if (doc.payload().ok) {
                         totalGeocoded++;
                     }
                 });
@@ -485,32 +485,32 @@
                 console.log(`Found ${totalAddresses} geocoding results`);
 
                 // Update stats
-                document.getElementById('totalSubmissions').textContent = submissions.length;
+                document.getElementById('totalSubmissions').textContent = analytics.length;
                 document.getElementById('totalAddresses').textContent = totalAddresses;
                 document.getElementById('totalGeocoded').textContent = totalGeocoded;
-                document.getElementById('successRate').textContent = 
+                document.getElementById('okRate').textContent = 
                     totalAddresses > 0 ? Math.round((totalGeocoded / totalAddresses) * 100) + '%' : '0%';
 
-                // Display submissions table
-                displaySubmissions(submissions);
+                // Display analytics table
+                displaySubmissions(analytics);
                 
             } catch (error) {
-                console.error('Error loading dashboard data:', error);
-                document.getElementById('submissionsContainer').innerHTML = 
-                    `<div class="error-message">Error loading data: ${error.message}<br>Check browser console for details.</div>`;
+                console.error('Error loading dashboard payload:', error);
+                document.getElementById('analyticsContainer').innerHTML = 
+                    `<div class="error-message">Error loading payload: ${error.message}<br>Check browser console for details.</div>`;
             }
         }
 
-        function displaySubmissions(submissions) {
-            const container = document.getElementById('submissionsContainer');
+        function displaySubmissions(analytics) {
+            const container = document.getElementById('analyticsContainer');
             
-            if (submissions.length === 0) {
-                container.innerHTML = '<div class="loading">No submissions found</div>';
+            if (analytics.length === 0) {
+                container.innerHTML = '<div class="loading">No analytics found</div>';
                 return;
             }
 
             let html = `
-                <table class="submissions-table">
+                <table class="analytics-table">
                     <thead>
                         <tr>
                             <th>Timestamp</th>
@@ -527,33 +527,33 @@
                     <tbody>
             `;
 
-            submissions.forEach(submission => {
-                const timestamp = submission.timestamp ? 
-                    (submission.timestamp.toDate ? submission.timestamp.toDate().toLocaleString() : 
-                     new Date(submission.timestamp.seconds * 1000).toLocaleString()) : 
+            analytics.forEach(submission => {
+                const ts = submission.ts ? 
+                    (submission.ts.toDate ? submission.ts.toDate().toLocaleString() : 
+                     new Date(submission.ts.seconds * 1000).toLocaleString()) : 
                     'Unknown';
                 
-                const statusClass = submission.status === 'completed' ? 'status-completed' : 
-                                   submission.status === 'received' ? 'status-received' : 'status-error';
+                const stClass = submission.st === 'completed' ? 'st-completed' : 
+                                   submission.st === 'received' ? 'st-received' : 'st-error';
 
-                const userAgent = submission.userAgent || 'Unknown';
-                const browser = getBrowserFromUserAgent(userAgent);
+                const ua = submission.ua || 'Unknown';
+                const browser = getBrowserFromUserAgent(ua);
 
                 html += `
                     <tr>
-                        <td>${timestamp}</td>
-                        <td><code>${(submission.sessionId || '').substring(0, 8)}...</code></td>
-                        <td>${submission.filename || 'Unknown'}</td>
-                        <td>${submission.totalRows || 0}</td>
+                        <td>${ts}</td>
+                        <td><code>${(submission.sid || '').substring(0, 8)}...</code></td>
+                        <td>${submission.fn || 'Unknown'}</td>
+                        <td>${submission.rc || 0}</td>
                         <td>${submission.processedRows || 0}</td>
-                        <td>${submission.successCount || 0}</td>
-                        <td><span class="status-badge ${statusClass}">${submission.status || 'unknown'}</span></td>
-                        <td title="${userAgent}">${browser}</td>
+                        <td>${submission.okCount || 0}</td>
+                        <td><span class="st-badge ${stClass}">${submission.st || 'unknown'}</span></td>
+                        <td title="${ua}">${browser}</td>
                         <td>
                             <div class="actions">
-                                <button class="view-btn" onclick="viewResults('${submission.sessionId}')">View</button>
-                                <button class="download-btn" onclick="downloadCSV('${submission.sessionId}')">Download</button>
-                                <button class="delete-btn" onclick="deleteSubmission('${submission.sessionId}', '${submission.id}')">🗑️ Delete</button>
+                                <button class="view-btn" onclick="viewResults('${submission.sid}')">View</button>
+                                <button class="download-btn" onclick="downloadCSV('${submission.sid}')">Download</button>
+                                <button class="delete-btn" onclick="deleteSubmission('${submission.sid}', '${submission.id}')">🗑️ Delete</button>
                             </div>
                         </td>
                     </tr>
@@ -564,24 +564,24 @@
             container.innerHTML = html;
         }
 
-        function getBrowserFromUserAgent(userAgent) {
-            if (userAgent.includes('Chrome')) return '🌐 Chrome';
-            if (userAgent.includes('Firefox')) return '🦊 Firefox';
-            if (userAgent.includes('Safari')) return '🧭 Safari';
-            if (userAgent.includes('Edge')) return '🌀 Edge';
+        function getBrowserFromUserAgent(ua) {
+            if (ua.includes('Chrome')) return '🌐 Chrome';
+            if (ua.includes('Firefox')) return '🦊 Firefox';
+            if (ua.includes('Safari')) return '🧭 Safari';
+            if (ua.includes('Edge')) return '🌀 Edge';
             return '❓ Unknown';
         }
 
-        async function viewResults(sessionId) {
-            if (!sessionId) return;
+        async function viewResults(sid) {
+            if (!sid) return;
 
             try {
-                console.log(`Loading results for session: ${sessionId}`);
+                console.log(`Loading results for session: ${sid}`);
                 
                 // Get submission details
                 const submissionQuery = window.query(
-                    window.collection(window.firebaseDb, 'submissions'),
-                    window.where('sessionId', '==', sessionId)
+                    window.collection(window.firebaseDb, 'analytics'),
+                    window.where('sid', '==', sid)
                 );
                 
                 const submissionSnapshot = await window.getDocs(submissionQuery);
@@ -591,24 +591,24 @@
                     return;
                 }
 
-                const submissions = [];
+                const analytics = [];
                 submissionSnapshot.forEach((doc) => {
-                    submissions.push(doc.data());
+                    analytics.push(doc.payload());
                 });
                 
-                const submission = submissions[0]; // Get the first matching submission
+                const submission = analytics[0]; // Get the first matching submission
 
                 // Get geocode results
                 const resultsQuery = window.query(
-                    window.collection(window.firebaseDb, 'geocode_results'),
-                    window.where('sessionId', '==', sessionId)
+                    window.collection(window.firebaseDb, 'metrics'),
+                    window.where('sid', '==', sid)
                 );
                 
                 const resultsSnapshot = await window.getDocs(resultsQuery);
                 const results = [];
                 
                 resultsSnapshot.forEach((doc) => {
-                    results.push(doc.data());
+                    results.push(doc.payload());
                 });
 
                 console.log(`Found ${results.length} geocoding results for session`);
@@ -619,11 +619,11 @@
                 let html = `
                     <h2>📊 Submission Details</h2>
                     <div style="margin: 20px 0; padding: 20px; background: #f7fafc; border-radius: 8px;">
-                        <p><strong>Session ID:</strong> <code>${sessionId}</code></p>
-                        <p><strong>Filename:</strong> ${submission.filename || 'Unknown'}</p>
-                        <p><strong>Total Rows:</strong> ${submission.totalRows || 0}</p>
-                        <p><strong>Status:</strong> ${submission.status || 'Unknown'}</p>
-                        <p><strong>User Agent:</strong> ${submission.userAgent || 'Unknown'}</p>
+                        <p><strong>Session ID:</strong> <code>${sid}</code></p>
+                        <p><strong>Filename:</strong> ${submission.fn || 'Unknown'}</p>
+                        <p><strong>Total Rows:</strong> ${submission.rc || 0}</p>
+                        <p><strong>Status:</strong> ${submission.st || 'Unknown'}</p>
+                        <p><strong>User Agent:</strong> ${submission.ua || 'Unknown'}</p>
                         <p><strong>URL:</strong> ${submission.url || 'Unknown'}</p>
                         ${submission.referrer ? `<p><strong>Referrer:</strong> ${submission.referrer}</p>` : ''}
                     </div>
@@ -648,15 +648,15 @@
                     `;
 
                     results.forEach(result => {
-                        const resultClass = result.success ? 'success-result' : 'failed-result';
+                        const resultClass = result.ok ? 'ok-result' : 'failed-result';
                         html += `
                             <tr class="${resultClass}">
-                                <td>${result.address || ''}</td>
+                                <td>${result.addr || ''}</td>
                                 <td>${result.city || ''}</td>
                                 <td>${result.state || ''}</td>
-                                <td>${result.zipCode || 'Failed'}</td>
-                                <td>${result.success ? '✅ Yes' : '❌ No'}</td>
-                                <td>${result.apiUsed || 'Unknown'}</td>
+                                <td>${result.zip || 'Failed'}</td>
+                                <td>${result.ok ? '✅ Yes' : '❌ No'}</td>
+                                <td>${result.api || 'Unknown'}</td>
                             </tr>
                         `;
                     });
@@ -666,14 +666,14 @@
                     html += '<p>No geocoding results found for this session.</p>';
                 }
 
-                // Show original data if available
-                if (submission.data && Array.isArray(submission.data)) {
+                // Show original payload if available
+                if (submission.payload && Array.isArray(submission.payload)) {
                     html += `
-                        <h3 style="margin-top: 30px;">📋 Original Data (${submission.data.length} rows)</h3>
-                        <p><em>This is the complete CSV data that was uploaded by the user.</em></p>
+                        <h3 style="margin-top: 30px;">📋 Original Data (${submission.payload.length} rows)</h3>
+                        <p><em>This is the complete CSV payload that was uploaded by the user.</em></p>
                         <div style="max-height: 300px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; margin-top: 10px;">
-                            <pre style="padding: 15px; font-size: 0.8rem;">${JSON.stringify(submission.data.slice(0, 10), null, 2)}</pre>
-                            ${submission.data.length > 10 ? `<p style="padding: 10px; text-align: center; color: #718096;"><em>... and ${submission.data.length - 10} more rows</em></p>` : ''}
+                            <pre style="padding: 15px; font-size: 0.8rem;">${JSON.stringify(submission.payload.slice(0, 10), null, 2)}</pre>
+                            ${submission.payload.length > 10 ? `<p style="padding: 10px; text-align: center; color: #718096;"><em>... and ${submission.payload.length - 10} more rows</em></p>` : ''}
                         </div>
                     `;
                 }
@@ -691,18 +691,18 @@
             document.getElementById('resultsModal').style.display = 'none';
         }
 
-        async function downloadCSV(sessionId, processedData) {
+        async function downloadCSV(sid, result) {
             try {
-                console.log(`Generating CSV for session: ${sessionId}`);
+                console.log(`Generating CSV for session: ${sid}`);
                 
-                // If we have the processed data, use it
-                if (processedData && Array.isArray(processedData)) {
-                    generateAndDownloadCSV(sessionId, processedData);
+                // If we have the processed payload, use it
+                if (result && Array.isArray(result)) {
+                    generateAndDownloadCSV(sid, result);
                     return;
                 }
                 
-                // Otherwise, rebuild the processed data from Firebase
-                await rebuildAndDownloadCSV(sessionId);
+                // Otherwise, rebuild the processed payload from Firebase
+                await rebuildAndDownloadCSV(sid);
                 
             } catch (error) {
                 console.error('Error downloading CSV:', error);
@@ -710,83 +710,83 @@
             }
         }
 
-        async function rebuildAndDownloadCSV(sessionId) {
+        async function rebuildAndDownloadCSV(sid) {
             try {
-                // Get original submission data
+                // Get original submission payload
                 const submissionQuery = window.query(
-                    window.collection(window.firebaseDb, 'submissions'),
-                    window.where('sessionId', '==', sessionId)
+                    window.collection(window.firebaseDb, 'analytics'),
+                    window.where('sid', '==', sid)
                 );
                 
                 const submissionSnapshot = await window.getDocs(submissionQuery);
                 
                 if (submissionSnapshot.empty) {
-                    alert('Submission data not found');
+                    alert('Submission payload not found');
                     return;
                 }
 
-                const submission = submissionSnapshot.docs[0].data();
-                const originalData = submission.data;
-                const config = submission.config;
+                const submission = submissionSnapshot.docs[0].payload();
+                const originalData = submission.payload;
+                const cfg = submission.cfg;
 
-                if (!originalData || !config) {
-                    alert('Original data or configuration not found');
+                if (!originalData || !cfg) {
+                    alert('Original payload or cfguration not found');
                     return;
                 }
 
                 // Get all geocoding results for this session
                 const resultsQuery = window.query(
-                    window.collection(window.firebaseDb, 'geocode_results'),
-                    window.where('sessionId', '==', sessionId)
+                    window.collection(window.firebaseDb, 'metrics'),
+                    window.where('sid', '==', sid)
                 );
                 
                 const resultsSnapshot = await window.getDocs(resultsQuery);
                 const geocodeResults = {};
                 
                 resultsSnapshot.forEach((doc) => {
-                    const result = doc.data();
-                    const key = `${result.address}|${result.city}|${result.state}`.toUpperCase();
-                    if (result.success && result.zipCode) {
-                        geocodeResults[key] = result.zipCode;
+                    const result = doc.payload();
+                    const key = `${result.addr}|${result.city}|${result.state}`.toUpperCase();
+                    if (result.ok && result.zip) {
+                        geocodeResults[key] = result.zip;
                     }
                 });
 
-                // Rebuild processed data exactly like the main application
-                const processedData = originalData.map(row => {
+                // Rebuild processed payload exactly like the main application
+                const result = originalData.map(row => {
                     const newRow = { ...row };
                     
-                    const address = row[config.addressColumn]?.trim().toUpperCase() || '';
-                    const city = row[config.cityColumn]?.trim().toUpperCase() || '';
-                    const state = row[config.stateColumn]?.trim().toUpperCase() || '';
-                    const currentZip = row[config.zipColumn]?.trim() || '';
+                    const addr = row[cfg.addrColumn]?.trim().toUpperCase() || '';
+                    const city = row[cfg.cityColumn]?.trim().toUpperCase() || '';
+                    const state = row[cfg.stateColumn]?.trim().toUpperCase() || '';
+                    const currentZip = row[cfg.zipColumn]?.trim() || '';
                     
-                    // Only update if no valid ZIP exists and we have geocoding data
-                    if (address && city && state && 
+                    // Only update if no valid ZIP exists and we have geocoding payload
+                    if (addr && city && state && 
                         (!currentZip || currentZip.length !== 5 || !/^\d{5}$/.test(currentZip))) {
                         
-                        const key = `${address}|${city}|${state}`;
+                        const key = `${addr}|${city}|${state}`;
                         if (geocodeResults[key]) {
-                            newRow[config.zipColumn] = geocodeResults[key];
+                            newRow[cfg.zipColumn] = geocodeResults[key];
                         }
                     }
                     
                     return newRow;
                 });
 
-                generateAndDownloadCSV(sessionId, processedData);
+                generateAndDownloadCSV(sid, result);
 
             } catch (error) {
                 console.error('Error rebuilding CSV:', error);
-                alert('Error rebuilding processed data. Check console for details.');
+                alert('Error rebuilding processed payload. Check console for details.');
             }
         }
 
-        function generateAndDownloadCSV(sessionId, processedData) {
+        function generateAndDownloadCSV(sid, result) {
             // Use the exact same CSV generation logic as the main application
-            const headers = Object.keys(processedData[0] || {});
+            const headers = Object.keys(result[0] || {});
             let csv = headers.map(h => `"${h}"`).join(',') + '\n';
             
-            for (const row of processedData) {
+            for (const row of result) {
                 const values = headers.map(header => {
                     const value = row[header] || '';
                     return `"${value.toString().replace(/"/g, '""')}"`;
@@ -800,25 +800,25 @@
             
             const a = document.createElement('a');
             a.href = url;
-            a.download = `${sessionId.substring(0, 8)}_geocoded_results.csv`;
+            a.download = `${sid.substring(0, 8)}_geocoded_results.csv`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
             window.URL.revokeObjectURL(url);
             
-            console.log('CSV downloaded successfully');
+            console.log('CSV downloaded okfully');
         }
 
-        async function deleteSubmission(sessionId, docId) {
+        async function deleteSubmission(sid, docId) {
             // Confirm deletion
-            const confirmation = confirm(`⚠️ DELETE SUBMISSION?\n\nThis will permanently delete:\n• Original uploaded CSV data\n• All geocoding results\n• Processing history\n\nSession: ${sessionId.substring(0, 12)}...\n\n⚠️ THIS CANNOT BE UNDONE!`);
+            const confirmation = confirm(`⚠️ DELETE SUBMISSION?\n\nThis will permanently delete:\n• Original uploaded CSV payload\n• All geocoding results\n• Processing history\n\nSession: ${sid.substring(0, 12)}...\n\n⚠️ THIS CANNOT BE UNDONE!`);
             
             if (!confirmation) {
                 return;
             }
 
             try {
-                console.log(`Deleting submission: ${sessionId}`);
+                console.log(`Deleting submission: ${sid}`);
                 
                 // Show loading state
                 const deleteBtn = event.target;
@@ -828,8 +828,8 @@
 
                 // Delete all geocode results for this session
                 const resultsQuery = window.query(
-                    window.collection(window.firebaseDb, 'geocode_results'),
-                    window.where('sessionId', '==', sessionId)
+                    window.collection(window.firebaseDb, 'metrics'),
+                    window.where('sid', '==', sid)
                 );
                 
                 const resultsSnapshot = await window.getDocs(resultsQuery);
@@ -841,27 +841,27 @@
 
                 console.log(`Found ${resultsSnapshot.size} geocode results to delete`);
 
-                // Delete all related submissions (there might be multiple documents for one session)
-                const submissionsQuery = window.query(
-                    window.collection(window.firebaseDb, 'submissions'),
-                    window.where('sessionId', '==', sessionId)
+                // Delete all related analytics (there might be multiple documents for one session)
+                const analyticsQuery = window.query(
+                    window.collection(window.firebaseDb, 'analytics'),
+                    window.where('sid', '==', sid)
                 );
                 
-                const submissionsSnapshot = await window.getDocs(submissionsQuery);
+                const analyticsSnapshot = await window.getDocs(analyticsQuery);
                 
-                submissionsSnapshot.forEach((doc) => {
+                analyticsSnapshot.forEach((doc) => {
                     deletePromises.push(window.deleteDoc(doc.ref));
                 });
 
-                console.log(`Found ${submissionsSnapshot.size} submission documents to delete`);
+                console.log(`Found ${analyticsSnapshot.size} submission documents to delete`);
 
                 // Execute all deletions
                 await Promise.all(deletePromises);
                 
                 console.log(`✅ Successfully deleted ${deletePromises.length} documents`);
                 
-                // Show success message
-                alert(`✅ Submission deleted successfully!\n\nDeleted:\n• ${submissionsSnapshot.size} submission documents\n• ${resultsSnapshot.size} geocoding results`);
+                // Show ok message
+                alert(`✅ Submission deleted okfully!\n\nDeleted:\n• ${analyticsSnapshot.size} submission documents\n• ${resultsSnapshot.size} geocoding results`);
                 
                 // Refresh the dashboard
                 loadDashboardData();
@@ -879,30 +879,30 @@
 
         async function deleteAllSubmissions() {
             // Super confirmation for deleting everything
-            const confirmation1 = confirm('⚠️⚠️⚠️ DELETE ALL DATA? ⚠️⚠️⚠️\n\nThis will delete ALL submissions and geocoding data.\n\nContinue?');
+            const confirmation1 = confirm('⚠️⚠️⚠️ DELETE ALL DATA? ⚠️⚠️⚠️\n\nThis will delete ALL analytics and geocoding payload.\n\nContinue?');
             if (!confirmation1) return;
 
             const confirmation2 = confirm('⚠️ FINAL CONFIRMATION ⚠️\n\nType "DELETE ALL" in the next prompt to confirm.\n\nThis will permanently delete EVERYTHING!');
             if (!confirmation2) return;
 
-            const finalConfirm = prompt('Type "DELETE ALL" to confirm deletion of all data:');
+            const finalConfirm = prompt('Type "DELETE ALL" to confirm deletion of all payload:');
             if (finalConfirm !== 'DELETE ALL') {
                 alert('Deletion cancelled - text did not match.');
                 return;
             }
 
             try {
-                console.log('Deleting all submissions and results...');
+                console.log('Deleting all analytics and results...');
                 
                 // Get all documents from both collections
-                const [submissionsSnapshot, resultsSnapshot] = await Promise.all([
-                    window.getDocs(window.collection(window.firebaseDb, 'submissions')),
-                    window.getDocs(window.collection(window.firebaseDb, 'geocode_results'))
+                const [analyticsSnapshot, resultsSnapshot] = await Promise.all([
+                    window.getDocs(window.collection(window.firebaseDb, 'analytics')),
+                    window.getDocs(window.collection(window.firebaseDb, 'metrics'))
                 ]);
 
                 const deletePromises = [];
                 
-                submissionsSnapshot.forEach((doc) => {
+                analyticsSnapshot.forEach((doc) => {
                     deletePromises.push(window.deleteDoc(doc.ref));
                 });
                 
@@ -915,14 +915,14 @@
                 // Execute all deletions
                 await Promise.all(deletePromises);
                 
-                alert(`✅ Successfully deleted all data!\n\n• ${submissionsSnapshot.size} submissions\n• ${resultsSnapshot.size} geocoding results\n• ${deletePromises.length} total documents`);
+                alert(`✅ Successfully deleted all payload!\n\n• ${analyticsSnapshot.size} analytics\n• ${resultsSnapshot.size} geocoding results\n• ${deletePromises.length} total documents`);
                 
                 // Refresh the dashboard
                 loadDashboardData();
 
             } catch (error) {
-                console.error('Error deleting all data:', error);
-                alert(`❌ Error deleting data: ${error.message}`);
+                console.error('Error deleting all payload:', error);
+                alert(`❌ Error deleting payload: ${error.message}`);
             }
         }
 
