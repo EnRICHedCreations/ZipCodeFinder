@@ -108,7 +108,7 @@
             font-weight: 600;
         }
 
-        .refresh-btn, .logout-btn, .login-btn, .download-btn, .view-btn {
+        .refresh-btn, .logout-btn, .login-btn, .download-btn, .view-btn, .delete-btn {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border: none;
@@ -122,13 +122,17 @@
             font-size: 0.9rem;
         }
 
-        .refresh-btn:hover, .logout-btn:hover, .login-btn:hover, .download-btn:hover, .view-btn:hover {
+        .refresh-btn:hover, .logout-btn:hover, .login-btn:hover, .download-btn:hover, .view-btn:hover, .delete-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
         }
 
-        .logout-btn {
+        .logout-btn, .delete-btn {
             background: linear-gradient(135deg, #e53e3e 0%, #c53030 100%);
+        }
+
+        .delete-btn:hover {
+            box-shadow: 0 4px 12px rgba(229, 62, 62, 0.4);
         }
 
         .submissions-table {
@@ -304,13 +308,14 @@
 <body>
     <div class="container">
         <header class="header">
-            <h1>Admin Dashboard</h1>
+            <h1>🔐 Secret Admin Dashboard</h1>
+            <p>Access all ZIP Code Geocoder data from your GitHub Pages site</p>
         </header>
 
         <!-- Login Section -->
         <div class="login-section" id="loginSection">
             <h2>Admin Login</h2>
-            <p style="margin: 20px 0; color: #718096;">Enter password</p>
+            <p style="margin: 20px 0; color: #718096;">Enter password to access secret dashboard</p>
             <input type="password" id="passwordInput" class="password-input" placeholder="Admin Password">
             <button class="login-btn" onclick="login()">Login</button>
             <div id="loginError" class="error-message"></div>
@@ -344,6 +349,7 @@
                     <h2>User Submissions</h2>
                     <div>
                         <button class="refresh-btn" onclick="loadDashboardData()">🔄 Refresh</button>
+                        <button class="delete-btn" onclick="deleteAllSubmissions()" title="Delete all submissions and data">🗑️ Delete All</button>
                         <button class="logout-btn" onclick="logout()">Logout</button>
                     </div>
                 </div>
@@ -366,7 +372,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-        import { getFirestore, collection, query, orderBy, limit, getDocs, where } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+        import { getFirestore, collection, query, orderBy, limit, getDocs, where, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
         // Firebase configuration
         const firebaseConfig = {
@@ -392,6 +398,8 @@
         window.limit = limit;
         window.getDocs = getDocs;
         window.where = where;
+        window.deleteDoc = deleteDoc;
+        window.doc = doc;
         
         console.log('🔥 Firebase initialized for admin dashboard');
     </script>
@@ -545,6 +553,7 @@
                             <div class="actions">
                                 <button class="view-btn" onclick="viewResults('${submission.sessionId}')">View</button>
                                 <button class="download-btn" onclick="downloadCSV('${submission.sessionId}')">Download</button>
+                                <button class="delete-btn" onclick="deleteSubmission('${submission.sessionId}', '${submission.id}')">🗑️ Delete</button>
                             </div>
                         </td>
                     </tr>
@@ -798,6 +807,123 @@
             window.URL.revokeObjectURL(url);
             
             console.log('CSV downloaded successfully');
+        }
+
+        async function deleteSubmission(sessionId, docId) {
+            // Confirm deletion
+            const confirmation = confirm(`⚠️ DELETE SUBMISSION?\n\nThis will permanently delete:\n• Original uploaded CSV data\n• All geocoding results\n• Processing history\n\nSession: ${sessionId.substring(0, 12)}...\n\n⚠️ THIS CANNOT BE UNDONE!`);
+            
+            if (!confirmation) {
+                return;
+            }
+
+            try {
+                console.log(`Deleting submission: ${sessionId}`);
+                
+                // Show loading state
+                const deleteBtn = event.target;
+                const originalText = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '⏳ Deleting...';
+                deleteBtn.disabled = true;
+
+                // Delete all geocode results for this session
+                const resultsQuery = window.query(
+                    window.collection(window.firebaseDb, 'geocode_results'),
+                    window.where('sessionId', '==', sessionId)
+                );
+                
+                const resultsSnapshot = await window.getDocs(resultsQuery);
+                const deletePromises = [];
+                
+                resultsSnapshot.forEach((doc) => {
+                    deletePromises.push(window.deleteDoc(doc.ref));
+                });
+
+                console.log(`Found ${resultsSnapshot.size} geocode results to delete`);
+
+                // Delete all related submissions (there might be multiple documents for one session)
+                const submissionsQuery = window.query(
+                    window.collection(window.firebaseDb, 'submissions'),
+                    window.where('sessionId', '==', sessionId)
+                );
+                
+                const submissionsSnapshot = await window.getDocs(submissionsQuery);
+                
+                submissionsSnapshot.forEach((doc) => {
+                    deletePromises.push(window.deleteDoc(doc.ref));
+                });
+
+                console.log(`Found ${submissionsSnapshot.size} submission documents to delete`);
+
+                // Execute all deletions
+                await Promise.all(deletePromises);
+                
+                console.log(`✅ Successfully deleted ${deletePromises.length} documents`);
+                
+                // Show success message
+                alert(`✅ Submission deleted successfully!\n\nDeleted:\n• ${submissionsSnapshot.size} submission documents\n• ${resultsSnapshot.size} geocoding results`);
+                
+                // Refresh the dashboard
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Error deleting submission:', error);
+                alert(`❌ Error deleting submission: ${error.message}\n\nCheck console for details.`);
+                
+                // Restore button state
+                const deleteBtn = event.target;
+                deleteBtn.innerHTML = originalText;
+                deleteBtn.disabled = false;
+            }
+        }
+
+        async function deleteAllSubmissions() {
+            // Super confirmation for deleting everything
+            const confirmation1 = confirm('⚠️⚠️⚠️ DELETE ALL DATA? ⚠️⚠️⚠️\n\nThis will delete ALL submissions and geocoding data.\n\nContinue?');
+            if (!confirmation1) return;
+
+            const confirmation2 = confirm('⚠️ FINAL CONFIRMATION ⚠️\n\nType "DELETE ALL" in the next prompt to confirm.\n\nThis will permanently delete EVERYTHING!');
+            if (!confirmation2) return;
+
+            const finalConfirm = prompt('Type "DELETE ALL" to confirm deletion of all data:');
+            if (finalConfirm !== 'DELETE ALL') {
+                alert('Deletion cancelled - text did not match.');
+                return;
+            }
+
+            try {
+                console.log('Deleting all submissions and results...');
+                
+                // Get all documents from both collections
+                const [submissionsSnapshot, resultsSnapshot] = await Promise.all([
+                    window.getDocs(window.collection(window.firebaseDb, 'submissions')),
+                    window.getDocs(window.collection(window.firebaseDb, 'geocode_results'))
+                ]);
+
+                const deletePromises = [];
+                
+                submissionsSnapshot.forEach((doc) => {
+                    deletePromises.push(window.deleteDoc(doc.ref));
+                });
+                
+                resultsSnapshot.forEach((doc) => {
+                    deletePromises.push(window.deleteDoc(doc.ref));
+                });
+
+                console.log(`Deleting ${deletePromises.length} total documents...`);
+
+                // Execute all deletions
+                await Promise.all(deletePromises);
+                
+                alert(`✅ Successfully deleted all data!\n\n• ${submissionsSnapshot.size} submissions\n• ${resultsSnapshot.size} geocoding results\n• ${deletePromises.length} total documents`);
+                
+                // Refresh the dashboard
+                loadDashboardData();
+
+            } catch (error) {
+                console.error('Error deleting all data:', error);
+                alert(`❌ Error deleting data: ${error.message}`);
+            }
         }
 
         // Handle Enter key in password input
