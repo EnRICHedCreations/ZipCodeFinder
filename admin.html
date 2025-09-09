@@ -387,12 +387,12 @@
         // Make Firebase available globally
         window.firebaseApp = app;
         window.firebaseDb = db;
-        window.firestoreCollection = collection;
-        window.firestoreQuery = query;
-        window.firestoreOrderBy = orderBy;
-        window.firestoreLimit = limit;
-        window.firestoreGetDocs = getDocs;
-        window.firestoreWhere = where;
+        window.collection = collection;
+        window.query = query;
+        window.orderBy = orderBy;
+        window.limit = limit;
+        window.getDocs = getDocs;
+        window.where = where;
         
         console.log('🔥 Firebase initialized for admin dashboard');
     </script>
@@ -441,13 +441,13 @@
                 console.log('Loading dashboard data from Firebase...');
                 
                 // Get submissions ordered by timestamp
-                const submissionsQuery = window.firestoreQuery(
-                    window.firestoreCollection(window.firebaseDb, 'submissions'),
-                    window.firestoreOrderBy('timestamp', 'desc'),
-                    window.firestoreLimit(100)
+                const submissionsQuery = window.query(
+                    window.collection(window.firebaseDb, 'submissions'),
+                    window.orderBy('timestamp', 'desc'),
+                    window.limit(100)
                 );
                 
-                const submissionsSnapshot = await window.firestoreGetDocs(submissionsQuery);
+                const submissionsSnapshot = await window.getDocs(submissionsQuery);
                 const submissions = [];
                 
                 submissionsSnapshot.forEach((doc) => {
@@ -460,10 +460,10 @@
                 console.log(`Found ${submissions.length} submissions`);
 
                 // Get geocode results for statistics
-                const resultsQuery = window.firestoreQuery(
-                    window.firestoreCollection(window.firebaseDb, 'geocode_results')
+                const resultsQuery = window.query(
+                    window.collection(window.firebaseDb, 'geocode_results')
                 );
-                const resultsSnapshot = await window.firestoreGetDocs(resultsQuery);
+                const resultsSnapshot = await window.getDocs(resultsQuery);
                 
                 let totalAddresses = 0;
                 let totalGeocoded = 0;
@@ -573,12 +573,12 @@
                 console.log(`Loading results for session: ${sessionId}`);
                 
                 // Get submission details
-                const submissionQuery = window.firestoreQuery(
-                    window.firestoreCollection(window.firebaseDb, 'submissions'),
-                    window.firestoreWhere('sessionId', '==', sessionId)
+                const submissionQuery = window.query(
+                    window.collection(window.firebaseDb, 'submissions'),
+                    window.where('sessionId', '==', sessionId)
                 );
                 
-                const submissionSnapshot = await window.firestoreGetDocs(submissionQuery);
+                const submissionSnapshot = await window.getDocs(submissionQuery);
                 
                 if (submissionSnapshot.empty) {
                     alert('Submission not found');
@@ -593,12 +593,12 @@
                 const submission = submissions[0]; // Get the first matching submission
 
                 // Get geocode results
-                const resultsQuery = window.firestoreQuery(
-                    window.firestoreCollection(window.firebaseDb, 'geocode_results'),
-                    window.firestoreWhere('sessionId', '==', sessionId)
+                const resultsQuery = window.query(
+                    window.collection(window.firebaseDb, 'geocode_results'),
+                    window.where('sessionId', '==', sessionId)
                 );
                 
-                const resultsSnapshot = await window.firestoreGetDocs(resultsQuery);
+                const resultsSnapshot = await window.getDocs(resultsQuery);
                 const results = [];
                 
                 resultsSnapshot.forEach((doc) => {
