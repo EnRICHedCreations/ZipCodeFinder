@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universal ZIP Code Geocoder</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Universal ZIP Code Geocoder</h1>
+            <p class="subtitle">Add accurate ZIP codes to your property lists</p>
+        </header>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <h3>Upload Your CSV File</h3>
+                <p>Drag and drop your CSV file here or click to browse</p>
+                <input type="file" id="fileInput" accept=".csv" hidden>
+                <button class="browse-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+            </div>
+        </div>
+
+        <div class="config-section" id="configSection" style="display: none;">
+            <h3>Column Configuration</h3>
+            <div class="config-grid">
+                <div class="config-item">
+                    <label for="addressColumn">Address Column:</label>
+                    <select id="addressColumn"></select>
+                </div>
+                <div class="config-item">
+                    <label for="cityColumn">City Column:</label>
+                    <select id="cityColumn"></select>
+                </div>
+                <div class="config-item">
+                    <label for="stateColumn">State Column:</label>
+                    <select id="stateColumn"></select>
+                </div>
+                <div class="config-item">
+                    <label for="zipColumn">ZIP Code Column:</label>
+                    <select id="zipColumn"></select>
+                </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="process-btn" id="processBtn" onclick="processFile()">Process File</button>
+                <button class="stop-btn" id="stopBtn" onclick="stopProcessing()" style="display: none;">Stop Processing</button>
+            </div>
+        </div>
+
+        <div class="progress-section" id="progressSection" style="display: none;">
+            <h3>Processing Progress</h3>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="progress-stats">
+                <span id="progressText">Preparing to process...</span>
+            </div>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-label">Processed:</span>
+                    <span class="stat-value" id="processedCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Success:</span>
+                    <span class="stat-value" id="successCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Failed:</span>
+                    <span class="stat-value" id="failedCount">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Success Rate:</span>
+                    <span class="stat-value" id="successRate">0%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="results-section" id="resultsSection" style="display: none;">
+            <h3>Results</h3>
+            <div class="results-log" id="resultsLog"></div>
+            <div class="download-section" id="downloadSection" style="display: none;">
+                <button class="download-btn" id="downloadBtn">Download Processed File</button>
+            </div>
+        </div>
+
+        <footer class="footer">
+            <p>Real Estate Lead Processor - Works with any US city/state combination</p>
+        </footer>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
