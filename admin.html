@@ -545,9 +545,7 @@
                         <td>
                             <div class="actions">
                                 <button class="view-btn" onclick="viewResults('${submission.sessionId}')">View</button>
-                                ${submission.status === 'completed' && submission.processedData ? 
-                                  `<button class="download-btn" onclick="downloadCSV('${submission.sessionId}', ${JSON.stringify(submission.processedData).replace(/"/g, '&quot;')})">Download</button>` : 
-                                  ''}
+                                <button class="download-btn" onclick="downloadCSV('${submission.sessionId}')">Download</button>
                             </div>
                         </td>
                     </tr>
@@ -685,41 +683,122 @@
             document.getElementById('resultsModal').style.display = 'none';
         }
 
-        function downloadCSV(sessionId, processedData) {
-            if (!processedData || !Array.isArray(processedData)) {
-                alert('No processed data available for download');
-                return;
-            }
-
+        async function downloadCSV(sessionId, processedData) {
             try {
-                // Generate CSV
-                const headers = Object.keys(processedData[0] || {});
-                let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+                console.log(`Generating CSV for session: ${sessionId}`);
                 
-                for (const row of processedData) {
-                    const values = headers.map(header => {
-                        const value = row[header] || '';
-                        return `"${value.toString().replace(/"/g, '""')}"`;
-                    });
-                    csv += values.join(',') + '\n';
+                // If we have the processed data, use it
+                if (processedData && Array.isArray(processedData)) {
+                    generateAndDownloadCSV(sessionId, processedData);
+                    return;
                 }
-
-                // Download file
-                const blob = new Blob([csv], { type: 'text/csv' });
-                const url = window.URL.createObjectURL(blob);
                 
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `${sessionId.substring(0, 8)}_processed.csv`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-
+                // Otherwise, rebuild the processed data from Firebase
+                await rebuildAndDownloadCSV(sessionId);
+                
             } catch (error) {
                 console.error('Error downloading CSV:', error);
                 alert('Error downloading file. Check console for details.');
             }
+        }
+
+        async function rebuildAndDownloadCSV(sessionId) {
+            try {
+                // Get original submission data
+                const submissionQuery = window.query(
+                    window.collection(window.firebaseDb, 'submissions'),
+                    window.where('sessionId', '==', sessionId)
+                );
+                
+                const submissionSnapshot = await window.getDocs(submissionQuery);
+                
+                if (submissionSnapshot.empty) {
+                    alert('Submission data not found');
+                    return;
+                }
+
+                const submission = submissionSnapshot.docs[0].data();
+                const originalData = submission.data;
+                const config = submission.config;
+
+                if (!originalData || !config) {
+                    alert('Original data or configuration not found');
+                    return;
+                }
+
+                // Get all geocoding results for this session
+                const resultsQuery = window.query(
+                    window.collection(window.firebaseDb, 'geocode_results'),
+                    window.where('sessionId', '==', sessionId)
+                );
+                
+                const resultsSnapshot = await window.getDocs(resultsQuery);
+                const geocodeResults = {};
+                
+                resultsSnapshot.forEach((doc) => {
+                    const result = doc.data();
+                    const key = `${result.address}|${result.city}|${result.state}`.toUpperCase();
+                    if (result.success && result.zipCode) {
+                        geocodeResults[key] = result.zipCode;
+                    }
+                });
+
+                // Rebuild processed data exactly like the main application
+                const processedData = originalData.map(row => {
+                    const newRow = { ...row };
+                    
+                    const address = row[config.addressColumn]?.trim().toUpperCase() || '';
+                    const city = row[config.cityColumn]?.trim().toUpperCase() || '';
+                    const state = row[config.stateColumn]?.trim().toUpperCase() || '';
+                    const currentZip = row[config.zipColumn]?.trim() || '';
+                    
+                    // Only update if no valid ZIP exists and we have geocoding data
+                    if (address && city && state && 
+                        (!currentZip || currentZip.length !== 5 || !/^\d{5}$/.test(currentZip))) {
+                        
+                        const key = `${address}|${city}|${state}`;
+                        if (geocodeResults[key]) {
+                            newRow[config.zipColumn] = geocodeResults[key];
+                        }
+                    }
+                    
+                    return newRow;
+                });
+
+                generateAndDownloadCSV(sessionId, processedData);
+
+            } catch (error) {
+                console.error('Error rebuilding CSV:', error);
+                alert('Error rebuilding processed data. Check console for details.');
+            }
+        }
+
+        function generateAndDownloadCSV(sessionId, processedData) {
+            // Use the exact same CSV generation logic as the main application
+            const headers = Object.keys(processedData[0] || {});
+            let csv = headers.map(h => `"${h}"`).join(',') + '\n';
+            
+            for (const row of processedData) {
+                const values = headers.map(header => {
+                    const value = row[header] || '';
+                    return `"${value.toString().replace(/"/g, '""')}"`;
+                });
+                csv += values.join(',') + '\n';
+            }
+
+            // Download file
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${sessionId.substring(0, 8)}_geocoded_results.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            console.log('CSV downloaded successfully');
         }
 
         // Handle Enter key in password input
